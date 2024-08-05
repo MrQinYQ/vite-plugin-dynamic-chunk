@@ -1,0 +1,32 @@
+{
+  "name": "vite-plugin-dynamic-chunk",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "build:tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "qinyequan",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.1.0",
+    "rollup": "^4.20.0",
+    "typescript": "^5.5.4",
+    "unbuild": "^2.0.0",
+    "vite": "^5.3.5"
+  }
+}
