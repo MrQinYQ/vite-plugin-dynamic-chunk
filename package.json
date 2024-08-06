@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-dynamic-chunk",
   "version": "0.0.1",
-  "description": "",
+  "description": "A vite plugin for dynamic split chunk",
   "type": "module",
   "exports": {
     ".": {
@@ -19,7 +19,15 @@
     "build:tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "url": "https://github.com/MrQinYQ/vite-plugin-dynamic-chunk.git"
+  },
+  "keywords": [
+    "vite",
+    "dynamic chunk",
+    "chunk",
+    "vite-plugin"
+  ],
   "author": "qinyequan",
   "license": "MIT",
   "devDependencies": {
