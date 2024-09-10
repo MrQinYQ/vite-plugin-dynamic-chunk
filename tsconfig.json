@@ -1,17 +1,14 @@
 {
-    "compilerOptions": {
-      "target": "ES2020",
-      "lib": ["ES2020"],
-      "module": "ESNext",
-      "strict": true,
-      "skipLibCheck": true,
-      "isolatedModules": true,
-      "resolveJsonModule": true,
-      "moduleResolution": "Node",
-      "useDefineForClassFields": true,
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "include": [
+      "src"
+  ],
+  "compilerOptions": {
       "outDir": "dist",
-      "declaration": true
-    },
-    "include": ["src"]
-  }
-  
+      "module": "CommonJS",
+      "declaration": true,
+      "esModuleInterop": true,
+      "moduleResolution": "Node",
+      "allowImportingTsExtensions": false
+  },
+}

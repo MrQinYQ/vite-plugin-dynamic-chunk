@@ -1,21 +1,22 @@
 {
   "name": "vite-plugin-dynamic-chunk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A vite plugin for dynamic split chunk",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": "./esm/index.js",
+      "require": "./dist/index.js"
     }
   },
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "esm"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "tsc && tsc -p tsconfig.esm.json",
     "build:tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -31,10 +32,10 @@
   "author": "qinyequan",
   "license": "MIT",
   "devDependencies": {
+    "@tsconfig/node12": "^12.1.3",
     "@types/node": "^22.1.0",
     "rollup": "^4.20.0",
     "typescript": "^5.5.4",
-    "unbuild": "^2.0.0",
     "vite": "^5.3.5"
   }
 }

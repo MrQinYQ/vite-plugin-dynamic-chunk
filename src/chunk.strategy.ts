@@ -98,18 +98,6 @@ const wrapCustomSplitConfig = (
         const depR = packageInfo.filter((item: any) => item instanceof RegExp) as RegExp[];
         const depS = packageInfo
             .filter((item: any) => typeof item === 'string') as string[];
-            // .map((item: any) => {
-            //     try {
-            //         return resolve.sync(item, {
-            //             basedir: process.cwd(),
-            //             preserveSymlinks: false,
-            //         });
-            //     } catch (err) {
-            //         console.error('err', err);
-            //         return '';
-            //     }
-            // })
-            // .filter((_: string | any[]) => _.length > 0);
         ginfo[group] = {
             depR,
             depS,
@@ -149,7 +137,6 @@ const wrapCustomSplitConfig = (
             // moduleId.includes('node_modules') &&
             !isCSSIdentifier(moduleId)
         ) {
-            // console.log('moduleId', moduleId);
             const gks = Object.keys(ginfo);
             for (const group of gks) {
                 const { depR, depS, raw } = ginfo[group];
@@ -158,13 +145,11 @@ const wrapCustomSplitConfig = (
                     isDepInclude(moduleId, depS, [], raw.filter((item) => typeof item === 'string') as string[])
                 ) {
                     map.set(group, [...(map.get(group) ?? []), moduleId]);
-                    // console.log(moduleId, group);
                     return group;
                 }
                 for (const rule of depR) {
                     if (rule.test(moduleId)) {
                         map.set(group, [...(map.get(group) ?? []), moduleId]);
-                        // console.log(moduleId, group);
                         return group;
                     }
                 }
@@ -221,28 +206,6 @@ const manualChunks = (
                     return chunkname;
                 }
             }
-        } else {
-            // const result = staticImportedScan(id, getModuleInfo, cache, []);
-            // if (result) {
-            //     map.set('index', [...(map.get('index') ?? []), id]);
-            //     return 'index';
-            // }
-            // 不需要进行如下处理, rollup自己会有类似操作, 对于动态import如果你没有返回拆分包名，rollup也会为你拆分chunk, 其多个chunk公用代码rollup也会为你拆分，所以原则上我们要做的只需要处理依赖即可
-            // const scanresult = dynamicImportedScan(id, getModuleInfo);
-            // if (scanresult.result.length > 0) {
-            //   const name = scanresult.result
-            //     .map((importedId: string) => {
-            //       const lastname = getLastname(importedId);
-            //       const extname = path.extname(lastname);
-            //       const _result = lastname.replace(extname, "");
-            //       return _result;
-            //     })
-            //     .sort()
-            //     .join("_");
-            //     const chunkname = `${name}_share`;
-            //     map.set(chunkname, [...(map.get(chunkname) ?? []), id]);
-            //     return chunkname;
-            // }
         }
 
     }, dependencySplitOption);

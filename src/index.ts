@@ -2,8 +2,8 @@ import type {
     ManualChunkMeta,
     OutputOptions,
   } from 'rollup'
-// import type { Plugin, UserConfig } from "vite";
-import manualChunks from './chunk.strategy';
+import type { Plugin, UserConfig } from "vite";
+import manualChunks from './chunk.strategy.js';
 
 function arraify<T>(target: T | T[]): T[] {
     return Array.isArray(target) ? target : [target]
@@ -13,10 +13,11 @@ export interface DynamicChunkPluginOptions {
     dependencySplitOption?: {
         [key: string]: (string | RegExp)[];
     };
-    splitDynamicImportDependency?: boolean
+    splitDynamicImportDependency?: boolean;
+    experimentalMinChunkSize?: number;
 }
 
-export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): any {
+export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): Plugin {
     const caches: Map<any, any>[] = []
     function createSplitVendorChunk(output: OutputOptions, config: any) {
       const cache = new Map()
@@ -29,7 +30,7 @@ export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): any {
     }
     return {
       name: 'vite:dynamic-chunk',
-      config(config: any) {
+      config(config) {
         let outputs = config?.build?.rollupOptions?.output
         if (outputs) {
           outputs = arraify(outputs)
@@ -50,6 +51,9 @@ export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): any {
               } else {
                 output.manualChunks = viteManualChunks
               }
+              if (output.experimentalMinChunkSize === undefined) {
+                output.experimentalMinChunkSize = options.experimentalMinChunkSize ?? 1000
+              }
             }
           }
         } else {
@@ -58,6 +62,7 @@ export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): any {
               rollupOptions: {
                 output: {
                   manualChunks: createSplitVendorChunk({}, config),
+                  experimentalMinChunkSize: options.experimentalMinChunkSize ?? 1000
                 },
               },
             },
