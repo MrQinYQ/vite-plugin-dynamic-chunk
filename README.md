@@ -2,6 +2,12 @@
 
 A vite plugin for dynamic split chunk
 
+Split dynamic import dependency.
+
+Split entry dependency.
+
+Merge chunks smaller than the threshold.
+
 ## Usage
 
 ```js
@@ -39,7 +45,8 @@ interface DynamicChunkPluginOptions {
     dependencySplitOption?: {
         [key: string]: (string | RegExp)[];
     };
-    splitDynamicImportDependency?: boolean;
+    splitDynamicImportDependency?: boolean; // Split dynamic import dependency. default: true
+    experimentalMinChunkSize?: number;// Merge chunks smaller than the threshold. default: 1000
 }
 ```
 
