@@ -1,4 +1,4 @@
-# vite-plugin-chunk-split
+# vite-plugin-dynamic-chunk
 
 A vite plugin for dynamic split chunk
 
