@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-dynamic-chunk",
-  "version": "0.0.3-alpha.4",
+  "version": "0.0.3-alpha.5",
   "description": "A vite plugin for dynamic split chunk",
   "type": "module",
   "exports": {
