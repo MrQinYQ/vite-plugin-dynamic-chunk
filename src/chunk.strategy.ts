@@ -1,4 +1,6 @@
 import * as path from 'path';
+import * as os from 'os';
+import { resolveEntry } from './utils.js';
 
 const map = new Map<string, string[]>();
 const cssLangs = '\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)';
@@ -75,8 +77,21 @@ function dynamicImportedScan(
     };
 }
 
+export function slash(p: string): string {
+    return p.replace(/\\/g, "/");
+}
+
+export function normalizePath(id: string): string {
+    let key = path.posix.normalize(isWindows ? slash(id) : id);
+    if(key.charCodeAt(0) === 0){
+        key = key.substring(1);
+    }
+    return key;
+}
+export const isWindows = os.platform() === "win32";
+
 const cache = new Map();
-const wrapCustomSplitConfig = (
+const wrapCustomSplitConfig = async (
     manualChunks: {
         (id: any, { getModuleInfo }: { getModuleInfo: any }): string | undefined;
         (arg0: any, arg1: { getModuleIds: any; getModuleInfo: any }): any;
@@ -84,6 +99,7 @@ const wrapCustomSplitConfig = (
     customOptions: {
         [key: string]: (string | RegExp)[];
     },
+    root: string
 ) => {
     const groups = Object.keys(customOptions);
     const ginfo: {
@@ -96,8 +112,11 @@ const wrapCustomSplitConfig = (
     for (const group of groups) {
         const packageInfo = customOptions[group];
         const depR = packageInfo.filter((item: any) => item instanceof RegExp) as RegExp[];
-        const depS = packageInfo
-            .filter((item: any) => typeof item === 'string') as string[];
+        const depS = await Promise.all(packageInfo
+            .filter((item: any) => typeof item === 'string').map(item => {
+                return resolveEntry(item, root)
+            }))
+        // console.log('depS', depS);
         ginfo[group] = {
             depR,
             depS,
@@ -106,27 +125,31 @@ const wrapCustomSplitConfig = (
     }
 
     return (moduleId: string, { getModuleIds, getModuleInfo }: any) => {
-        const isDepInclude = (id: string, depPaths: any[], importChain: any[], _groups: string[]) => {
+        let isDebug = false;
+        const isDepInclude = (id: string, depPaths: any[], importChain: any[]) => {
             const key = `${id}-${depPaths.join('|')}`;
+            isDebug && console.log('id', id, depPaths, importChain);
             // circular dependency
             if (importChain.includes(id)) {
                 cache.set(key, false);
                 return false;
             }
-            if (cache.has(key)) {
+            isDebug && console.log('cache', cache.has(key), cache.get(key));
+            if (!isDebug && cache.has(key)) {
                 return cache.get(key);
             }
-            if (depPaths.some((item) => id.includes(`${item}/`)) || _groups.some((item) => id.indexOf(`${item}/`) > -1)) {
+            if (depPaths.includes(id)) {
               importChain.forEach((item: any) => cache.set(`${item}-${depPaths.join('|')}`, true));
               return true;
             }
             const moduleInfo = getModuleInfo(id);
+            // isDebug && console.log('moduleInfo', moduleInfo, moduleInfo.importers);
             if (!moduleInfo || !moduleInfo.importers) {
                 cache.set(key, false);
                 return false;
             }
             const isInclude = moduleInfo.importers.some((importer: any) =>
-                isDepInclude(importer, depPaths, importChain.concat(id), _groups),
+                isDepInclude(importer, depPaths, importChain.concat(id)),
             );
             // set cache, important!
             cache.set(key, isInclude);
@@ -137,15 +160,23 @@ const wrapCustomSplitConfig = (
             // moduleId.includes('node_modules') &&
             !isCSSIdentifier(moduleId)
         ) {
+            // console.log('moduleId', moduleId);
             const gks = Object.keys(ginfo);
             for (const group of gks) {
+
                 const { depR, depS, raw } = ginfo[group];
                 if (
                     depS.length &&
-                    isDepInclude(moduleId, depS, [], raw.filter((item) => typeof item === 'string') as string[])
+                    isDepInclude(moduleId, depS, [])
                 ) {
                     map.set(group, [...(map.get(group) ?? []), moduleId]);
+                    if (isDebug) {
+                        isDebug = false;
+                    }
                     return group;
+                }
+                if (isDebug) {
+                    isDebug = false;
                 }
                 for (const rule of depR) {
                     if (rule.test(moduleId)) {
@@ -170,14 +201,15 @@ function getLastname(importedId: string) {
     return name;
 }
 
-const manualChunks = (
+const manualChunks = async (
     dependencySplitOption: {
         [key: string]: (string | RegExp)[];
     },
     splitDynamicImportDependency = true,
-    cache: Map<any, any>
+    cache: Map<any, any>,
+    root: string
 ) => {
-    return wrapCustomSplitConfig((id: string, { getModuleInfo }: any) => {
+    return await wrapCustomSplitConfig((id: string, { getModuleInfo }: any) => {
         if (isCSSIdentifier(id)) {
             return;
         }
@@ -185,6 +217,7 @@ const manualChunks = (
         if (id.includes('node_modules')) {
             const result = staticImportedScan(id, getModuleInfo, cache, []);
             if (result) {
+                // console.log('vendor', id);
                 map.set('vendor', [...(map.get('vendor') ?? []), id]);
                 return 'vendor';
             }
@@ -208,7 +241,7 @@ const manualChunks = (
             }
         }
 
-    }, dependencySplitOption);
+    }, dependencySplitOption, root);
 };
 
 export default manualChunks;

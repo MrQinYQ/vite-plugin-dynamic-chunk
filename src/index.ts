@@ -19,23 +19,24 @@ export interface DynamicChunkPluginOptions {
 
 export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): Plugin {
     const caches: Map<any, any>[] = []
-    function createSplitVendorChunk(output: OutputOptions, config: any) {
+    async function createSplitVendorChunk(output: OutputOptions, config: any, root: string) {
       const cache = new Map()
       caches.push(cache)
       const build = config.build ?? {}
       const format = output?.format
       if (!build.ssr && !build.lib && format !== 'umd' && format !== 'iife') {
-        return manualChunks(options.dependencySplitOption ?? {}, options.splitDynamicImportDependency ?? true, cache)
+        return await manualChunks(options.dependencySplitOption ?? {}, options.splitDynamicImportDependency ?? true, cache, root)
       }
     }
     return {
       name: 'vite:dynamic-chunk',
-      config(config) {
-        let outputs = config?.build?.rollupOptions?.output
+      async config(config) {
+        let outputs = config?.build?.rollupOptions?.output;
+        const root = config.root ?? process.cwd();
         if (outputs) {
           outputs = arraify(outputs)
           for (const output of outputs) {
-            const viteManualChunks = createSplitVendorChunk(output, config)
+            const viteManualChunks = await createSplitVendorChunk(output, config, root)
             if (viteManualChunks) {
               if (output.manualChunks) {
                 if (typeof output.manualChunks === 'function') {
@@ -61,7 +62,7 @@ export function dynamicChunkPlugin(options: DynamicChunkPluginOptions): Plugin {
             build: {
               rollupOptions: {
                 output: {
-                  manualChunks: createSplitVendorChunk({}, config),
+                  manualChunks: await createSplitVendorChunk({}, config, root),
                   experimentalMinChunkSize: options.experimentalMinChunkSize ?? 1000
                 },
               },

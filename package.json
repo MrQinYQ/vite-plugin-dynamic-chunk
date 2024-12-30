@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-dynamic-chunk",
-  "version": "0.0.2",
+  "version": "0.0.3-alpha.4",
   "description": "A vite plugin for dynamic split chunk",
   "type": "module",
   "exports": {
@@ -16,7 +16,7 @@
     "esm"
   ],
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.esm.json",
+    "build": "tsc && tsc -p tsconfig.node.json",
     "build:tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -37,5 +37,10 @@
     "rollup": "^4.20.0",
     "typescript": "^5.5.4",
     "vite": "^5.3.5"
+  },
+  "dependencies": {
+    "@types/resolve": "^1.20.6",
+    "import-meta-resolve": "^4.1.0",
+    "resolve": "^1.22.10"
   }
 }
