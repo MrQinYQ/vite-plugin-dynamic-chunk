@@ -1,5 +1,7 @@
 import * as path from 'path';
+import { createHash } from 'crypto';
 
+const MAX_FILENAME_LENGTH = 255; // file system limit
 const map = new Map<string, string[]>();
 const cssLangs = '\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)';
 const cssLangRE = new RegExp(cssLangs);
@@ -134,7 +136,7 @@ const wrapCustomSplitConfig = (
         };
 
         if (
-            // moduleId.includes('node_modules') &&
+            moduleId.includes('node_modules') &&
             !isCSSIdentifier(moduleId)
         ) {
             const gks = Object.keys(ginfo);
@@ -201,7 +203,15 @@ const manualChunks = (
                         })
                         .sort()
                         .join('_');
-                    const chunkname = `${name}_vendor`;
+                    const suffix = '_vendor';
+                    let chunkname;
+                    if (name.length >= MAX_FILENAME_LENGTH - 7) {
+                        const hash = createHash('md5').update(name).digest('hex').slice(0, 6);
+                        chunkname = `${hash}${suffix}`;
+                        console.warn('filename is too long, use hash instead', name, hash);
+                    } else {
+                        chunkname = `${name}${suffix}`;
+                    }
                     map.set(chunkname, [...(map.get(chunkname) ?? []), id]);
                     return chunkname;
                 }
