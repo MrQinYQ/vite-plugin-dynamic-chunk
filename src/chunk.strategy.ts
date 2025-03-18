@@ -2,6 +2,12 @@ import * as path from 'path';
 import { createHash } from 'crypto';
 
 const MAX_FILENAME_LENGTH = 255; // file system limit
+const SUFFIX_LENGTH = 10; // '_vendor' + '.js'
+const LEGACY_LENGTH = 7; // '-legacy'
+const HASH_LENGTH = 9; // '-DwLQ4WuF'
+const SOURCEMAP_LENGTH = 4; // '.map'
+
+const LIMIT_LENGTH = MAX_FILENAME_LENGTH - SUFFIX_LENGTH - LEGACY_LENGTH - HASH_LENGTH - SOURCEMAP_LENGTH;
 const map = new Map<string, string[]>();
 const cssLangs = '\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)';
 const cssLangRE = new RegExp(cssLangs);
@@ -205,7 +211,8 @@ const manualChunks = (
                         .join('_');
                     const suffix = '_vendor';
                     let chunkname;
-                    if (name.length >= MAX_FILENAME_LENGTH - 7) {
+                    // console.log(name.length, LIMIT_LENGTH);
+                    if (name.length > LIMIT_LENGTH) {
                         const hash = createHash('md5').update(name).digest('hex').slice(0, 6);
                         chunkname = `${hash}${suffix}`;
                         console.warn('filename is too long, use hash instead', name, hash);
